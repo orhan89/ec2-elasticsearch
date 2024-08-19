@@ -72,7 +72,7 @@ module "ec2" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "5.6.1"
 
-  count = 3
+  count = var.node_count
 
   name              = "es-node-${count.index}"
   ami               = data.aws_ami.debian.id
@@ -101,7 +101,7 @@ moved {
 }
 
 resource "aws_eip" "es" {
-  count = 3
+  count = var.node_count
 
   domain   = "vpc"
   instance = module.ec2[count.index].id
@@ -123,7 +123,7 @@ locals {
 }
 
 resource "null_resource" "ansible" {
-  count = 3
+  count = var.node_count
 
   depends_on = [
     local_sensitive_file.private_key,

@@ -7,3 +7,8 @@ variable "provisioning_ip_range" {
   type    = string
   default = "127.0.0.1/32"
 }
+
+variable "node_count" {
+  type    = number
+  default = 1
+}
