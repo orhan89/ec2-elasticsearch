@@ -60,7 +60,11 @@ Here I put some screenshot for PoC
 ## Resources
 
 [1] [terraform-aws-modules/ec2-instance module](https://registry.terraform.io/modules/terraform-aws-modules/ec2-instance/aws/latest)
+
 [2] [terraform-aws-modules/vpc module](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest)
+
 [3] [terraform-aws-modules/security-group module](https://registry.terraform.io/modules/terraform-aws-modules/security-group/aws/latest)
+
 [4] [ansible-elasticsearch role](https://github.com/elastic/ansible-elasticsearch)
-[4] [Elastic Cloud on the Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-overview.html)
+
+[5] [Elastic Cloud on the Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-overview.html)
