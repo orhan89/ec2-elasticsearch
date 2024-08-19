@@ -61,3 +61,8 @@ module "ec2" {
     },
   ]
 }
+
+resource "aws_eip" "k3s_server" {
+  vpc      = true
+  instance = module.ec2.id
+}
