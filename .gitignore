@@ -1,0 +1,5 @@
+terraform/.ssh
+terraform/.terraform*
+terraform/*.tfvars
+terraform/*.tfstate
+ansible/files
