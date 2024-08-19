@@ -103,6 +103,10 @@ resource "random_password" "elastic" {
   special = false
 }
 
+locals {
+  node_name = element(split(".", module.ec2.private_dns), 0)
+}
+
 resource "null_resource" "ansible" {
   depends_on = [
     local_sensitive_file.private_key,
@@ -120,7 +124,8 @@ resource "null_resource" "ansible" {
          --user admin \
          --private-key ${local_sensitive_file.private_key.filename} \
          -e "elastic_user_password=${random_password.elastic.result}" \
-         -e "node_name=node1" \
+         -e "node_name=${local.node_name}" \
+         -e "private_ip=${module.ec2.private_ip}" \
          ../ansible/elasticsearch.yaml
     EOT
   }

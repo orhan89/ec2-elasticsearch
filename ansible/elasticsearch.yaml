@@ -16,13 +16,15 @@
     es_config:
       node.name: "{{ node_name }}"
       cluster.name: "mycluster"
-      discovery.seed_hosts: "localhost:9300"
+      cluster.initial_master_nodes:
+        - "{{ private_ip }}"
       bootstrap.memory_lock: true
       http.host: 0.0.0.0
       transport.host: 0.0.0.0
     es_api_basic_auth_username: "elastic" 
     es_api_basic_auth_password: "{{ elastic_user_password }}"
     es_enable_http_ssl: true
+    es_enable_transport_ssl: true
     es_ssl_key: "files/server.key"
     es_ssl_certificate: "files/server.cert"
     es_ssl_certificate_authority: "files/ca.cert"
