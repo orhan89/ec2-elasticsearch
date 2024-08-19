@@ -94,7 +94,10 @@ resource "random_password" "elastic" {
 resource "null_resource" "ansible" {
   depends_on = [
     local_sensitive_file.private_key,
-    module.ec2
+    module.ec2,
+    local_file.ca_cert,
+    local_file.server_cert,
+    local_sensitive_file.server_key
   ]
 
   provisioner "local-exec" {
@@ -109,4 +112,75 @@ resource "null_resource" "ansible" {
          ../ansible/elasticsearch.yaml
     EOT
   }
+}
+
+resource "tls_private_key" "ca" {
+  algorithm = "RSA"
+}
+
+resource "tls_self_signed_cert" "ca_cert" {
+  private_key_pem = tls_private_key.ca.private_key_pem
+
+  is_ca_certificate = true
+
+  subject {
+    country             = "ID"
+    province            = "Jawa Barat"
+    common_name         = "Test Elasticsearch CA"
+  }
+
+  validity_period_hours = 43800 //  1825 days or 5 years
+
+  allowed_uses = [
+    "digital_signature",
+    "cert_signing",
+    "crl_signing",
+  ]
+}
+
+resource "local_file" "ca_cert" {
+  content  = tls_self_signed_cert.ca_cert.cert_pem
+  filename = "../ansible/files/ca.cert"
+}
+
+resource "tls_private_key" "server" {
+  algorithm = "RSA"
+}
+
+resource "tls_cert_request" "server" {
+
+  private_key_pem = tls_private_key.server.private_key_pem
+
+  subject {
+    country             = "ID"
+    province            = "Jawa Barat"
+    common_name         = "Test Elasticsearch"
+  }
+}
+
+resource "tls_locally_signed_cert" "server" {
+  cert_request_pem = tls_cert_request.server.cert_request_pem
+  // CA Private key
+  ca_private_key_pem = tls_private_key.ca.private_key_pem
+  // CA certificate
+  ca_cert_pem = tls_self_signed_cert.ca_cert.cert_pem
+
+  validity_period_hours = 43800
+
+  allowed_uses = [
+    "digital_signature",
+    "key_encipherment",
+    "server_auth",
+    "client_auth",
+  ]
+}
+
+resource "local_file" "server_cert" {
+  content  = tls_locally_signed_cert.server.cert_pem
+  filename = "../ansible/files/server.cert"
+}
+
+resource "local_sensitive_file" "server_key" {
+  content  = tls_private_key.server.private_key_pem
+  filename = "../ansible/files/server.key"
 }

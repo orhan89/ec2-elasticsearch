@@ -22,3 +22,7 @@
       transport.host: 0.0.0.0
     es_api_basic_auth_username: "elastic" 
     es_api_basic_auth_password: "{{ elastic_user_password }}"
+    es_enable_http_ssl: true
+    es_ssl_key: "files/server.key"
+    es_ssl_certificate: "files/server.cert"
+    es_ssl_certificate_authority: "files/ca.cert"
