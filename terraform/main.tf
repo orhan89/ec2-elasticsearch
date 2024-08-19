@@ -85,3 +85,28 @@ resource "aws_eip" "k3s_server" {
   vpc      = true
   instance = module.ec2.id
 }
+
+resource "random_password" "elastic" {
+  length  = 16
+  special = false
+}
+
+resource "null_resource" "ansible" {
+  depends_on = [
+    local_sensitive_file.private_key,
+    module.ec2
+  ]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+       ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
+         -T 300 \
+         -i ${module.ec2.public_ip},  \
+         --user admin \
+         --private-key ${local_sensitive_file.private_key.filename} \
+         -e "elastic_user_password=${random_password.elastic.result}" \
+         -e "node_name=node1" \
+         ../ansible/elasticsearch.yaml
+    EOT
+  }
+}

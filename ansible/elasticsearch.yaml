@@ -1,0 +1,24 @@
+- name: Setup Elasticsearch
+  hosts: all
+  roles:
+    - role: elastic.elasticsearch
+  pre_tasks:
+    - name : install dependencies before starting
+      become: yes
+      apt:
+        name: 
+          - gnupg2
+        state: latest
+        update_cache: yes
+  vars:
+    es_version: 7.17.0
+    es_heap_size: 128m
+    es_config:
+      node.name: "{{ node_name }}"
+      cluster.name: "mycluster"
+      discovery.seed_hosts: "localhost:9300"
+      bootstrap.memory_lock: true
+      http.host: 0.0.0.0
+      transport.host: 0.0.0.0
+    es_api_basic_auth_username: "elastic" 
+    es_api_basic_auth_password: "{{ elastic_user_password }}"
