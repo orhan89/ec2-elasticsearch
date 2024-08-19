@@ -42,17 +42,31 @@ data "aws_ami" "debian" {
   }
 }
 
+module "security_group_ssh" {
+  source  = "terraform-aws-modules/security-group/aws//modules/ssh"
+  version = "5.1.2"
+
+  name   = "ssh"
+  vpc_id = module.vpc.vpc_id
+
+  ingress_cidr_blocks = [var.provisioning_ip_range]
+}
+
 module "ec2" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "5.6.1"
 
-  name                        = "es-node"
-  ami                         = data.aws_ami.debian.id
-  instance_type               = "t3.micro"
-  availability_zone           = element(module.vpc.azs, 0)
-  subnet_id                   = element(module.vpc.public_subnets, 0)
+  name              = "es-node"
+  ami               = data.aws_ami.debian.id
+  instance_type     = var.instance_type
+  availability_zone = element(module.vpc.azs, 0)
+  subnet_id         = element(module.vpc.public_subnets, 0)
 
-  key_name                    = module.key_pair.key_pair_name
+  key_name = module.key_pair.key_pair_name
+
+  vpc_security_group_ids = [
+    module.security_group_ssh.security_group_id,
+  ]
 
   root_block_device = [
     {
