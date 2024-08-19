@@ -57,6 +57,17 @@ module "security_group_ssh" {
   ingress_cidr_blocks = [var.provisioning_ip_range]
 }
 
+module "security_group_elasticsearch" {
+  source  = "terraform-aws-modules/security-group/aws//modules/elasticsearch"
+  version = "5.1.2"
+
+  name   = "elasticsearch"
+  vpc_id = module.vpc.vpc_id
+
+  auto_ingress_rules  = ["elasticsearch-rest-tcp"]
+  ingress_cidr_blocks = [var.provisioning_ip_range]
+}
+
 module "ec2" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "5.6.1"
@@ -71,6 +82,7 @@ module "ec2" {
 
   vpc_security_group_ids = [
     module.security_group_ssh.security_group_id,
+    module.security_group_elasticsearch.security_group_id,
   ]
 
   root_block_device = [
