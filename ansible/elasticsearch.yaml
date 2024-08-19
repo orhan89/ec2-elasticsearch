@@ -14,10 +14,10 @@
     es_version: 7.17.0
     es_heap_size: 128m
     es_config:
-      node.name: "{{ node_name }}"
+      node.name: "{{ es_node_name }}"
       cluster.name: "mycluster"
-      cluster.initial_master_nodes:
-        - "{{ private_ip }}"
+      cluster.initial_master_nodes: "{{ initial_master_nodes }}"
+      discovery.seed_hosts: "{{ discovery_seed_hosts }}"
       bootstrap.memory_lock: true
       http.host: 0.0.0.0
       transport.host: 0.0.0.0

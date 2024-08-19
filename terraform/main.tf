@@ -72,11 +72,13 @@ module "ec2" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "5.6.1"
 
-  name              = "es-node"
+  count = 3
+
+  name              = "es-node-${count.index}"
   ami               = data.aws_ami.debian.id
   instance_type     = var.instance_type
-  availability_zone = element(module.vpc.azs, 0)
-  subnet_id         = element(module.vpc.public_subnets, 0)
+  availability_zone = element(module.vpc.azs, count.index)
+  subnet_id         = element(module.vpc.public_subnets, count.index)
 
   key_name = module.key_pair.key_pair_name
 
@@ -93,9 +95,21 @@ module "ec2" {
   ]
 }
 
-resource "aws_eip" "k3s_server" {
-  vpc      = true
-  instance = module.ec2.id
+moved {
+  from = module.ec2
+  to   = module.ec2[0]
+}
+
+resource "aws_eip" "es" {
+  count = 3
+
+  domain   = "vpc"
+  instance = module.ec2[count.index].id
+}
+
+moved {
+  from = aws_eip.k3s_server
+  to   = aws_eip.es[0]
 }
 
 resource "random_password" "elastic" {
@@ -104,10 +118,13 @@ resource "random_password" "elastic" {
 }
 
 locals {
-  node_name = element(split(".", module.ec2.private_dns), 0)
+  initial_master_nodes = join(",", module.ec2.*.private_ip)
+  discovery_seed_hosts = join(",", [for ip in module.ec2.*.private_ip : "${ip}:9300"])
 }
 
 resource "null_resource" "ansible" {
+  count = 3
+
   depends_on = [
     local_sensitive_file.private_key,
     module.ec2,
@@ -120,15 +137,21 @@ resource "null_resource" "ansible" {
     command = <<-EOT
        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook \
          -T 300 \
-         -i ${module.ec2.public_ip},  \
+         -i ${module.ec2[count.index].public_ip},  \
          --user admin \
          --private-key ${local_sensitive_file.private_key.filename} \
          -e "elastic_user_password=${random_password.elastic.result}" \
-         -e "node_name=${local.node_name}" \
-         -e "private_ip=${module.ec2.private_ip}" \
+         -e "initial_master_nodes=${local.initial_master_nodes}" \
+         -e "discovery_seed_hosts=${local.discovery_seed_hosts}" \
+         -e "es_node_name=${module.ec2[count.index].private_ip}" \
          ../ansible/elasticsearch.yaml
     EOT
   }
+}
+
+moved {
+  from = null_resource.ansible
+  to   = null_resource.ansible[0]
 }
 
 resource "tls_private_key" "ca" {
@@ -141,9 +164,9 @@ resource "tls_self_signed_cert" "ca_cert" {
   is_ca_certificate = true
 
   subject {
-    country             = "ID"
-    province            = "Jawa Barat"
-    common_name         = "Test Elasticsearch CA"
+    country     = "ID"
+    province    = "Jawa Barat"
+    common_name = "Test Elasticsearch CA"
   }
 
   validity_period_hours = 43800 //  1825 days or 5 years
@@ -169,9 +192,9 @@ resource "tls_cert_request" "server" {
   private_key_pem = tls_private_key.server.private_key_pem
 
   subject {
-    country             = "ID"
-    province            = "Jawa Barat"
-    common_name         = "Test Elasticsearch"
+    country     = "ID"
+    province    = "Jawa Barat"
+    common_name = "Test Elasticsearch"
   }
 }
 
