@@ -29,6 +29,11 @@ module "key_pair" {
   create_private_key = true
 }
 
+resource "local_sensitive_file" "private_key" {
+  content  = module.key_pair.private_key_pem
+  filename = ".ssh/id_rsa"
+}
+
 data "aws_ami" "debian" {
   most_recent = true
   owners      = ["amazon"]
