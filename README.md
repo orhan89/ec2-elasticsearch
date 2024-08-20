@@ -1,4 +1,9 @@
-This is an IaC implementation to build an elasticsearch cluster (multi-node) on AWS EC2 using Terraform and Ansible. The cluster is secured with login credentials, and all communication is secured with SSL.
+This is an IaC implementation to build an elasticsearch cluster (multi-node) on AWS EC2 using Terraform and Ansible. 
+## Features
+
+- Support single-node and multi-node (cluster)
+- Credentials for secured access
+- All communication is secured using SSL 
 
 ## Requirements
 
@@ -40,7 +45,7 @@ There is no need to run the ansible playbook manually as it will be called autom
 Get the IP address of all the new instances from terraform output
 
 ```sh
-$ terraform output server\_public\_ip
+$ terraform output server_public_ip
 ```
 
 And to get the elastic password
