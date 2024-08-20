@@ -159,6 +159,7 @@ resource "null_resource" "ansible" {
          -e "initial_master_nodes=${local.initial_master_nodes}" \
          -e "discovery_seed_hosts=${local.discovery_seed_hosts}" \
          -e "es_node_name=${module.ec2[count.index].private_ip}" \
+         -e "bootstrap_es=${var.bootstrap_es}" \
          ../ansible/elasticsearch.yaml
     EOT
   }

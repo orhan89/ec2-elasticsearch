@@ -16,7 +16,7 @@
     es_config:
       node.name: "{{ es_node_name }}"
       cluster.name: "mycluster"
-      cluster.initial_master_nodes: "{{ initial_master_nodes }}"
+      cluster.initial_master_nodes: "{{ initial_master_nodes if bootstrap_es else '' }}"
       discovery.seed_hosts: "{{ discovery_seed_hosts }}"
       bootstrap.memory_lock: true
       http.host: 0.0.0.0

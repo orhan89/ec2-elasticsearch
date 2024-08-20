@@ -12,3 +12,8 @@ variable "node_count" {
   type    = number
   default = 1
 }
+
+variable "bootstrap_es" {
+  type    = string
+  default = "false"
+}
